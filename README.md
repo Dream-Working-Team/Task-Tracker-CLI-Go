@@ -17,5 +17,5 @@ Asegúrate de tener [Go instalado](https://go.dev/doc/install) en tu sistema.
 
 1. Clona este repositorio:
    ```bash
-   git clone [https://github.com/TU_ORGANIZACION/task-tracker-go.git](https://github.com/Dream-Working-Team/Task-Tracker-CLI-Go.git)
+   git clone [https://github.com/Dream-Working-Team/Task-Tracker-CLI-Go.git](https://github.com/Dream-Working-Team/Task-Tracker-CLI-Go.git)
    cd task-tracker-go
