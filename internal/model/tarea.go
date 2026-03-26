@@ -16,7 +16,7 @@ const (
 // Definimos el modelo de tarea como dato estructurado
 // Los nombres de los campos deben iniciar en mayusculas para ser exportadoso publicos
 // y que el paquete encoding/json pueda acceder a ellos
-type task struct {
+type Task struct {
 	ID          int       `json:"id"`
 	Description string    `json:"description"`
 	Status      string    `json:"status"`
