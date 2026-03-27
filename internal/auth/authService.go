@@ -23,10 +23,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	// term permite leer contraseñas sin mostrarlas en pantalla
 	"golang.org/x/term"
+
+	"path/filepath"
+
+	"task-cli/internal/config"
 )
 
 // archiveSesion es el archivo local donde se corre la sesion actual del usuario
-const archiveSesion = ".session"
+func getRouteSesion() string {
+	dir, err := config.GetDirectionData()
+	if err != nil {
+		return ".session" // Fallback de emergencia a la raíz local
+	}
+	return filepath.Join(dir, ".session")
+}
 
 // passwordHashCost controla la fuerza del hash de bcrypt
 // Valores más altos mejoran la seguridad, pero aumentan el tiempo de procesamiento
@@ -79,7 +89,7 @@ func (s *AuthService) Login(username, password string) error {
 			return errors.New("credenciales inválidas")
 		}
 		idStr := strconv.Itoa(u.ID)
-		return os.WriteFile(archiveSesion, []byte(idStr), 0644)
+		return os.WriteFile(getRouteSesion(), []byte(idStr), 0644)
 
 	}
 	return errors.New("credenciales inválidas")
@@ -87,12 +97,12 @@ func (s *AuthService) Login(username, password string) error {
 
 // CloseSesion elimina el archivo de sesión para cerrar la sesión del usuario actual
 func CloseSesion() {
-	os.Remove(archiveSesion)
+	os.Remove(getRouteSesion())
 }
 
 // GetActiveUser devuelve el id del usuario autenticado actualmente desde el archivo de sesión
 func GetActiveUser() (string, error) {
-	data, err := os.ReadFile(archiveSesion)
+	data, err := os.ReadFile(getRouteSesion())
 	if err != nil {
 		return "", errors.New("no hay una sesión activa. Usa 'task-cli auth login'")
 	}
