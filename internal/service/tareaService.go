@@ -1,14 +1,10 @@
 package service
 
 import (
-	// fmt se utiliza para formatear mensajes de error
 	"fmt"
-	// time se usa para registrar fechas de creación y actualización
 	"time"
 
-	// model contiene las entidades del dominio, como Task y sus estados
 	"task-cli/internal/model"
-	// storage provee el acceso a la persistencia de tareas
 	"task-cli/internal/storage"
 )
 
@@ -18,12 +14,12 @@ type TaskService struct {
 	capacity *storage.Storage
 }
 
-// NuewTaskService crea el servicio de tareas con su dependencia de almacenamiento
+// NewTaskService crea una instancia del servicio de tareas con su almacenamiento
 func NewTaskService(s *storage.Storage) *TaskService {
 	return &TaskService{capacity: s}
 }
 
-// Add crea una nueva tarea, asigna un ID incremental y la persiste
+// Add agrega una nueva tarea con ID incremental y la guarda
 func (s *TaskService) Add(descripcion string) (model.Task, error) {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
@@ -43,6 +39,7 @@ func (s *TaskService) Add(descripcion string) (model.Task, error) {
 	return newTask, s.capacity.SaveTask(tasks)
 }
 
+// muteTask busca una tarea por ID, la modifica y guarda los cambios
 func (s *TaskService) muteTask(id int, modificar func(*model.Task)) error {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
@@ -61,20 +58,21 @@ func (s *TaskService) muteTask(id int, modificar func(*model.Task)) error {
 	return fmt.Errorf("tarea %d no encontrada", id)
 }
 
+// ChangeStatus actualiza el estado de una tarea por su ID
 func (s *TaskService) ChangeStatus(id int, newStatus string) error {
 	return s.muteTask(id, func(t *model.Task) {
 		t.Status = newStatus
 	})
 }
 
-// Actualizar modifica solo la descripción. (NUEVA)
+// Update cambia la descripción de una tarea por su ID
 func (s *TaskService) Update(id int, newDescription string) error {
 	return s.muteTask(id, func(t *model.Task) {
 		t.Description = newDescription
 	})
 }
 
-// List devuelve todas las tareas o solo las que coinciden con un estado filtro
+// Delete elimina una tarea por su ID y guarda la lista actualizada
 func (s *TaskService) Delete(id int) error {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
@@ -83,8 +81,7 @@ func (s *TaskService) Delete(id int) error {
 
 	for i := range tasks {
 		if tasks[i].ID == id {
-			// Truco idiomático: unimos todo lo que está antes del índice 'i'
-			// con todo lo que está después del índice 'i'.
+
 			tasks = append(tasks[:i], tasks[i+1:]...)
 			return s.capacity.SaveTask(tasks)
 		}
@@ -92,6 +89,7 @@ func (s *TaskService) Delete(id int) error {
 	return fmt.Errorf("tarea %d no encontrada", id)
 }
 
+// List devuelve todas las tareas o solo las que coinciden con un estado
 func (s *TaskService) List(filter string) ([]model.Task, error) {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {

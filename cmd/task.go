@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Helper: Verifica la sesión e instancia el servicio dinámicamente
+// GetServiceTask valida la sesión activa y crea el servicio de tareas del usuario
 func GetServiceTask() (*service.TaskService, error) {
 	usuarioID, err := auth.GetActiveUser()
 	if err != nil {
@@ -30,10 +30,7 @@ func GetServiceTask() (*service.TaskService, error) {
 	return service.NewTaskService(&storage.Storage{Route: archivo}), nil
 }
 
-// ---------------------------------------------------------
-// COMANDOS PLANOS (Raíz del CLI)
-// ---------------------------------------------------------
-
+// addCmd crea una nueva tarea con la descripción indicada
 var addCmd = &cobra.Command{
 	Use:   "add [descripción]",
 	Short: "Agrega una nueva tarea",
@@ -55,6 +52,7 @@ var addCmd = &cobra.Command{
 	},
 }
 
+// updateCmd actualiza la descripción de una tarea existente por ID
 var updateCmd = &cobra.Command{
 	Use:   "update [id] [nueva_descripcion]",
 	Short: "Actualiza la descripción de una tarea existente",
@@ -80,6 +78,7 @@ var updateCmd = &cobra.Command{
 	},
 }
 
+// deleteCmd elimina una tarea existente de forma permanente por ID
 var deleteCmd = &cobra.Command{
 	Use:   "delete [id]",
 	Short: "Elimina una tarea permanentemente",
@@ -105,6 +104,7 @@ var deleteCmd = &cobra.Command{
 	},
 }
 
+// markInProgressCmd cambia el estado de una tarea a en progreso
 var markInProgressCmd = &cobra.Command{
 	Use:   "mark-in-progress [id]",
 	Short: "Marca una tarea como en progreso",
@@ -130,6 +130,7 @@ var markInProgressCmd = &cobra.Command{
 	},
 }
 
+// markDoneCmd cambia el estado de una tarea a completada
 var markDoneCmd = &cobra.Command{
 	Use:   "mark-done [id]",
 	Short: "Marca una tarea como completada",
@@ -155,6 +156,7 @@ var markDoneCmd = &cobra.Command{
 	},
 }
 
+// listCmd muestra todas las tareas o las filtra por estado
 var listCmd = &cobra.Command{
 	Use:   "list [status]",
 	Short: "Lista las tareas",
@@ -167,7 +169,6 @@ var listCmd = &cobra.Command{
 		}
 
 		estado := ""
-		// Evaluamos si el usuario pasó un filtro (ej. list done)
 		if len(args) == 1 {
 			switch args[0] {
 			case "done", "hecho":
@@ -195,14 +196,12 @@ var listCmd = &cobra.Command{
 
 		fmt.Println("ID\tEstado\t\tDescripción")
 		for _, t := range tareas {
-			// Usando t.Status y t.Description según la convención de tu código
 			fmt.Printf("%d\t[%s]\t%s\n", t.ID, t.Status, t.Description)
 		}
 	},
 }
 
+// init registra los comandos de tareas en el comando raíz.
 func init() {
-	// APLANAMIENTO ARQUITECTÓNICO:
-	// Ya no usamos 'taskCmd'. Conectamos todos los comandos directamente al comando raíz ('rootCmd').
 	rootCmd.AddCommand(addCmd, updateCmd, deleteCmd, markInProgressCmd, markDoneCmd, listCmd)
 }

@@ -12,7 +12,7 @@ var rootCmd = &cobra.Command{
 	Long:  `Task Tracker CLI Secure. Permite gestionar tareas por usuario de forma aislada y persistente.`,
 }
 
-// Execute es llamado desde main.go
+// Execute ejecuta el comando raíz de la aplicación
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
