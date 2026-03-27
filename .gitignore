@@ -1,0 +1,35 @@
+# ==========================================
+# Binarios y Ejecutables
+# ==========================================
+# Ignoramos el binario compilado de nuestro CLI
+task-cli
+task-cli.exe
+# Ignoramos binarios de pruebas de Go
+*.test
+*.out
+
+# ==========================================
+# Base de Datos Local y Sesiones
+# ==========================================
+# ¡NUNCA subir datos reales o credenciales!
+data/
+*.json
+.session
+
+# ==========================================
+# Entorno y Dependencias
+# ==========================================
+vendor/
+.env
+
+# ==========================================
+# Configuraciones de SO y Editores
+# ==========================================
+# Antigravity (al ser un fork de VS Code) y otros editores
+.vscode/
+.idea/
+*.swp
+
+# Archivos de sistemas operativos (macOS/Windows)
+.DS_Store
+Thumbs.db
