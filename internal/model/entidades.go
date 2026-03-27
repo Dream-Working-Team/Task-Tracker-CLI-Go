@@ -26,7 +26,7 @@ type Task struct {
 
 // Definimos el modelo de usuario como dato estructurado
 type User struct {
-	ID           int    `json:"id"` // Nuevo identificador único
+	ID           int    `json:"id"`
 	Username     string `json:"username"`
 	PasswordHash string `json:"passwordHash"`
 }
