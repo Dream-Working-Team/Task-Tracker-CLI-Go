@@ -15,24 +15,24 @@ import (
 	"golang.org/x/term"
 )
 
-// archiveSesion is the local file that stores the currently authenticated user id.
+// archiveSesion es el archivo local donde se corre la sesion actual del usuario
 const archiveSesion = ".session"
 
-// passwordHashCost controls bcrypt hashing strength.
-// Higher values improve security but increase processing time.
+// passwordHashCost controla la fuerza del hash de bcrypt.
+// Valores más altos mejoran la seguridad, pero aumentan el tiempo de procesamiento.
 const passwordHashCost = bcrypt.DefaultCost
 
-// AuthService coordinates user registration, login, and session persistence.
+// AuthService coordina el registro de usuarios, el inicio de sesión y la persistencia de sesión.
 type AuthService struct {
 	save *storage.Storage
 }
 
-// NewAuthService creates an AuthService with the provided storage backend.
+// NewAuthService crea un AuthService con el backend de almacenamiento proporcionado.
 func NewAuthService(s *storage.Storage) *AuthService {
 	return &AuthService{save: s}
 }
 
-// Register creates a new user with a hashed password if the username is not taken.
+// Register crea un nuevo usuario con contraseña hasheada si el nombre de usuario no está en uso.
 func (s *AuthService) Register(username, password string) error {
 	usersGeneral, err := s.save.ReadUsers()
 	if err != nil {
@@ -54,7 +54,7 @@ func (s *AuthService) Register(username, password string) error {
 	return s.save.SaveUsers(usersGeneral)
 }
 
-// Login validates credentials and stores the authenticated user id in the session file.
+// Login valida las credenciales y guarda el id del usuario autenticado en el archivo de sesión.
 func (s *AuthService) Login(username, password string) error {
 	usersGeneral, err := s.save.ReadUsers()
 	if err != nil {
@@ -75,12 +75,12 @@ func (s *AuthService) Login(username, password string) error {
 	return errors.New("credenciales inválidas")
 }
 
-// CloseSesion removes the session file to end the current user session.
+// CloseSesion elimina el archivo de sesión para cerrar la sesión del usuario actual.
 func CloseSesion() {
 	os.Remove(archiveSesion)
 }
 
-// GetActiveUser returns the currently authenticated user id from the session file.
+// GetActiveUser devuelve el id del usuario autenticado actualmente desde el archivo de sesión.
 func GetActiveUser() (string, error) {
 	data, err := os.ReadFile(archiveSesion)
 	if err != nil {
@@ -89,7 +89,7 @@ func GetActiveUser() (string, error) {
 	return strings.TrimSpace(string(data)), nil
 }
 
-// ReadPass reads a password from terminal input without echoing typed characters.
+// ReadPass lee una contraseña desde la terminal sin mostrar los caracteres escritos.
 func ReadPass() string {
 	bytePassword, _ := term.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
