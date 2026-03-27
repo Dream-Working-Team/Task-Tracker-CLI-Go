@@ -12,60 +12,60 @@ type TaskService struct {
 	capacity *storage.Storage
 }
 
-func NuevoTareaService(s *storage.Storage) *TaskService {
+func NuewTaskService(s *storage.Storage) *TaskService {
 	return &TaskService{capacity: s}
 }
 
-func (s *TaskService) Agregar(descripcion string) (model.Task, error) {
-	tareas, err := s.capacity.ReadTask()
+func (s *TaskService) Add(descripcion string) (model.Task, error) {
+	tasks, err := s.capacity.ReadTask()
 	if err != nil {
 		return model.Task{}, err
 	}
 
 	id := 1
-	if len(tareas) > 0 {
-		id = tareas[len(tareas)-1].ID + 1
+	if len(tasks) > 0 {
+		id = tasks[len(tasks)-1].ID + 1
 	}
 
-	nueva := model.Task{
+	newTask := model.Task{
 		ID: id, Description: descripcion, Status: model.ToDo,
 		CreatedAt: time.Now(), UpdatedAt: time.Now(),
 	}
-	tareas = append(tareas, nueva)
-	return nueva, s.capacity.SaveTask(tareas)
+	tasks = append(tasks, newTask)
+	return newTask, s.capacity.SaveTask(tasks)
 }
 
-func (s *TaskService) CambiarEstado(id int, estado string) error {
-	tareas, err := s.capacity.ReadTask()
+func (s *TaskService) ChangeStatus(id int, estado string) error {
+	tasks, err := s.capacity.ReadTask()
 	if err != nil {
 		return err
 	}
 
-	for i := range tareas {
-		if tareas[i].ID == id {
-			tareas[i].Status = estado
-			tareas[i].UpdatedAt = time.Now()
-			return s.capacity.SaveTask(tareas)
+	for i := range tasks {
+		if tasks[i].ID == id {
+			tasks[i].Status = estado
+			tasks[i].UpdatedAt = time.Now()
+			return s.capacity.SaveTask(tasks)
 		}
 	}
 	return fmt.Errorf("tarea %d no encontrada", id)
 }
 
-func (s *TaskService) Listar(filtro string) ([]model.Task, error) {
-	tareas, err := s.capacity.ReadTask()
+func (s *TaskService) List(filter string) ([]model.Task, error) {
+	tasks, err := s.capacity.ReadTask()
 	if err != nil {
 		return nil, err
 	}
 
-	if filtro == "" {
-		return tareas, nil
+	if filter == "" {
+		return tasks, nil
 	}
 
-	var filtradas []model.Task
-	for _, t := range tareas {
-		if t.Status == filtro {
-			filtradas = append(filtradas, t)
+	var filtered []model.Task
+	for _, t := range tasks {
+		if t.Status == filter {
+			filtered = append(filtered, t)
 		}
 	}
-	return filtradas, nil
+	return filtered, nil
 }
