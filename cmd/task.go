@@ -170,11 +170,11 @@ var listCmd = &cobra.Command{
 		// Evaluamos si el usuario pasó un filtro (ej. list done)
 		if len(args) == 1 {
 			switch args[0] {
-			case "done":
+			case "done", "hecho":
 				estado = model.Complete
-			case "todo":
+			case "todo", "por_hacer":
 				estado = model.ToDo
-			case "in-progress":
+			case "in-progress", "en_curso":
 				estado = model.InProgress
 			default:
 				fmt.Println("❌ Filtro inválido. Usa: done, todo, in-progress")

@@ -20,6 +20,12 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Inicia sesión en el sistema",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		if _, err := auth.GetActiveUser(); err == nil {
+			fmt.Println("❌ Error: Ya tienes una sesión iniciada. Usa 'task-cli auth logout' primero.")
+			return // Abortamos la ejecución aquí mismo
+		}
+
 		fmt.Print("Usuario: ")
 		var username string
 		fmt.Scanln(&username)
@@ -43,6 +49,12 @@ var registerCmd = &cobra.Command{
 	Use:   "register",
 	Short: "Registra un nuevo usuario",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		if _, err := auth.GetActiveUser(); err == nil {
+			fmt.Println("❌ Error: Cierra tu sesión actual con 'task-cli auth logout' para registrar un usuario nuevo.")
+			return
+		}
+
 		fmt.Print("Nuevo Usuario: ")
 		var username string
 		fmt.Scanln(&username)
