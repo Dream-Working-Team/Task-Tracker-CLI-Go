@@ -59,6 +59,11 @@ func (s *AuthService) Register(username, password string) error {
 		return err
 	}
 
+	newID := 1
+	if len(usersGeneral) > 0 {
+		newID = usersGeneral[len(usersGeneral)-1].ID + 1
+	}
+
 	for _, u := range usersGeneral {
 		if u.Username == username {
 			return errors.New("el usuario ya existe")
@@ -70,7 +75,11 @@ func (s *AuthService) Register(username, password string) error {
 		return err
 	}
 
-	usersGeneral = append(usersGeneral, model.User{Username: username, PasswordHash: string(hash)})
+	usersGeneral = append(usersGeneral, model.User{
+		ID:           newID, // Asignamos el ID
+		Username:     username,
+		PasswordHash: string(hash),
+	})
 	return s.save.SaveUsers(usersGeneral)
 }
 
@@ -82,7 +91,7 @@ func (s *AuthService) Login(username, password string) error {
 	}
 
 	for _, u := range usersGeneral {
-		if u.Username == username {
+		if u.Username != username {
 			continue
 		}
 		if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)); err != nil {

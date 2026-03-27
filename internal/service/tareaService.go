@@ -61,7 +61,7 @@ func (s *TaskService) muteTask(id int, modificar func(*model.Task)) error {
 	return fmt.Errorf("tarea %d no encontrada", id)
 }
 
-func (s *TaskService) CambiarEstado(id int, newStatus string) error {
+func (s *TaskService) ChangeStatus(id int, newStatus string) error {
 	return s.muteTask(id, func(t *model.Task) {
 		t.Status = newStatus
 	})
