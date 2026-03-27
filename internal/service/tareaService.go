@@ -19,7 +19,7 @@ type TaskService struct {
 }
 
 // NuewTaskService crea el servicio de tareas con su dependencia de almacenamiento
-func NuewTaskService(s *storage.Storage) *TaskService {
+func NewTaskService(s *storage.Storage) *TaskService {
 	return &TaskService{capacity: s}
 }
 
@@ -43,8 +43,7 @@ func (s *TaskService) Add(descripcion string) (model.Task, error) {
 	return newTask, s.capacity.SaveTask(tasks)
 }
 
-// ChangeStatus actualiza el estado de una tarea por ID y guarda el cambio
-func (s *TaskService) ChangeStatus(id int, estado string) error {
+func (s *TaskService) muteTask(id int, modificar func(*model.Task)) error {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
 		return err
@@ -52,15 +51,47 @@ func (s *TaskService) ChangeStatus(id int, estado string) error {
 
 	for i := range tasks {
 		if tasks[i].ID == id {
-			tasks[i].Status = estado
+			// Ejecutamos la modificación específica (estado o descripción)
+			modificar(&tasks[i])
 			tasks[i].UpdatedAt = time.Now()
+
 			return s.capacity.SaveTask(tasks)
 		}
 	}
 	return fmt.Errorf("tarea %d no encontrada", id)
 }
 
+func (s *TaskService) CambiarEstado(id int, newStatus string) error {
+	return s.muteTask(id, func(t *model.Task) {
+		t.Status = newStatus
+	})
+}
+
+// Actualizar modifica solo la descripción. (NUEVA)
+func (s *TaskService) Update(id int, newDescription string) error {
+	return s.muteTask(id, func(t *model.Task) {
+		t.Description = newDescription
+	})
+}
+
 // List devuelve todas las tareas o solo las que coinciden con un estado filtro
+func (s *TaskService) Delete(id int) error {
+	tasks, err := s.capacity.ReadTask()
+	if err != nil {
+		return err
+	}
+
+	for i := range tasks {
+		if tasks[i].ID == id {
+			// Truco idiomático: unimos todo lo que está antes del índice 'i'
+			// con todo lo que está después del índice 'i'.
+			tasks = append(tasks[:i], tasks[i+1:]...)
+			return s.capacity.SaveTask(tasks)
+		}
+	}
+	return fmt.Errorf("tarea %d no encontrada", id)
+}
+
 func (s *TaskService) List(filter string) ([]model.Task, error) {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
