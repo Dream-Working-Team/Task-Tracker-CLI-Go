@@ -8,9 +8,9 @@ import "time"
 // Fomenta la seguridad para la escalabilidad
 
 const (
-	toDo       = "por_hacer"
-	inProgress = "en_curso"
-	complete   = "hecho"
+	ToDo       = "por_hacer"
+	InProgress = "en_curso"
+	Complete   = "hecho"
 )
 
 // Definimos el modelo de tarea como dato estructurado
@@ -22,4 +22,11 @@ type Task struct {
 	Status      string    `json:"status"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+// Definimos el modelo de usuario como dato estructurado
+type User struct {
+	ID           int    `json:"id"` // Nuevo identificador único
+	Username     string `json:"username"`
+	PasswordHash string `json:"passwordHash"`
 }
