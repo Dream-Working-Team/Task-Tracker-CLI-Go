@@ -1,27 +1,17 @@
 package auth
 
 import (
-	// errors permite crear y manejar errores simples
 	"errors"
-	// fmt se usa para imprimir saltos de línea y mensajes en consola
 	"fmt"
-	// os proporciona operaciones con archivos y sistema operativo
 	"os"
-	// strconv convierte tipos numéricos a texto y viceversa
 	"strconv"
-	// strings ofrece utilidades para manipular cadenas de texto
 	"strings"
-	// syscall permite acceder al descriptor de entrada estándar de la terminal
 	"syscall"
 
-	// model contiene las entidades
 	"task-cli/internal/model"
-	// storage provee acceso a la persistencia de usuarios
 	"task-cli/internal/storage"
 
-	// bcrypt se utiliza para generar y validar hashes de contraseñas
 	"golang.org/x/crypto/bcrypt"
-	// term permite leer contraseñas sin mostrarlas en pantalla
 	"golang.org/x/term"
 
 	"path/filepath"
@@ -29,7 +19,7 @@ import (
 	"task-cli/internal/config"
 )
 
-// archiveSesion es el archivo local donde se corre la sesion actual del usuario
+// getRouteSesion devuelve la ruta del archivo local donde se guarda la sesión.
 func getRouteSesion() string {
 	dir, err := config.GetDirectionData()
 	if err != nil {
@@ -38,7 +28,6 @@ func getRouteSesion() string {
 	return filepath.Join(dir, ".session")
 }
 
-// passwordHashCost controla la fuerza del hash de bcrypt
 // Valores más altos mejoran la seguridad, pero aumentan el tiempo de procesamiento
 const passwordHashCost = bcrypt.DefaultCost
 
@@ -47,16 +36,21 @@ type AuthService struct {
 	save *storage.Storage
 }
 
-// NewAuthService crea un AuthService con el backend de almacenamiento proporcionado
+// NewAuthService crea una instancia del servicio de autenticación.
 func NewAuthService(s *storage.Storage) *AuthService {
 	return &AuthService{save: s}
 }
 
-// Register crea un nuevo usuario con contraseña hasheada si el nombre de usuario no está en uso
+// Register registra un usuario nuevo si el nombre no existe.
 func (s *AuthService) Register(username, password string) error {
 	usersGeneral, err := s.save.ReadUsers()
 	if err != nil {
 		return err
+	}
+
+	newID := 1
+	if len(usersGeneral) > 0 {
+		newID = usersGeneral[len(usersGeneral)-1].ID + 1
 	}
 
 	for _, u := range usersGeneral {
@@ -70,11 +64,15 @@ func (s *AuthService) Register(username, password string) error {
 		return err
 	}
 
-	usersGeneral = append(usersGeneral, model.User{Username: username, PasswordHash: string(hash)})
+	usersGeneral = append(usersGeneral, model.User{
+		ID:           newID, // Asignamos el ID
+		Username:     username,
+		PasswordHash: string(hash),
+	})
 	return s.save.SaveUsers(usersGeneral)
 }
 
-// Login valida las credenciales y guarda el id del usuario autenticado en el archivo de sesión
+// Login valida credenciales y guarda la sesión del usuario autenticado.
 func (s *AuthService) Login(username, password string) error {
 	usersGeneral, err := s.save.ReadUsers()
 	if err != nil {
@@ -82,7 +80,7 @@ func (s *AuthService) Login(username, password string) error {
 	}
 
 	for _, u := range usersGeneral {
-		if u.Username == username {
+		if u.Username != username {
 			continue
 		}
 		if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)); err != nil {
@@ -95,12 +93,12 @@ func (s *AuthService) Login(username, password string) error {
 	return errors.New("credenciales inválidas")
 }
 
-// CloseSesion elimina el archivo de sesión para cerrar la sesión del usuario actual
+// CloseSesion cierra la sesión eliminando el archivo local de sesión.
 func CloseSesion() {
 	os.Remove(getRouteSesion())
 }
 
-// GetActiveUser devuelve el id del usuario autenticado actualmente desde el archivo de sesión
+// GetActiveUser devuelve el ID del usuario con sesión activa.
 func GetActiveUser() (string, error) {
 	data, err := os.ReadFile(getRouteSesion())
 	if err != nil {
@@ -109,7 +107,7 @@ func GetActiveUser() (string, error) {
 	return strings.TrimSpace(string(data)), nil
 }
 
-// ReadPass lee una contraseña desde la terminal sin mostrar los caracteres escritos
+// ReadPass lee una contraseña sin mostrarla en la terminal.
 func ReadPass() string {
 	bytePassword, _ := term.ReadPassword(int(syscall.Stdin))
 	fmt.Println()

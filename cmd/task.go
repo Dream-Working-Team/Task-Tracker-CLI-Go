@@ -14,8 +14,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Helper: Verifica la sesión e instancia el servicio dinámicamente
-func obtenerServicioTareas() (*service.TaskService, error) {
+// GetServiceTask valida la sesión activa y crea el servicio de tareas del usuario
+func GetServiceTask() (*service.TaskService, error) {
 	usuarioID, err := auth.GetActiveUser()
 	if err != nil {
 		return nil, err
@@ -30,17 +30,35 @@ func obtenerServicioTareas() (*service.TaskService, error) {
 	return service.NewTaskService(&storage.Storage{Route: archivo}), nil
 }
 
-var taskCmd = &cobra.Command{
-	Use:   "task",
-	Short: "Gestión de tareas (requiere sesión activa)",
+// addCmd crea una nueva tarea con la descripción indicada
+var addCmd = &cobra.Command{
+	Use:   "add [descripción]",
+	Short: "Agrega una nueva tarea",
+	Args:  cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		svc, err := GetServiceTask()
+		if err != nil {
+			fmt.Println("❌", err)
+			return
+		}
+
+		tarea, err := svc.Add(args[0])
+		if err != nil {
+			fmt.Printf("❌ Error: %v\n", err)
+			return
+		}
+		// Salida exacta según requerimiento
+		fmt.Printf("Task added successfully (ID: %d)\n", tarea.ID)
+	},
 }
 
+// updateCmd actualiza la descripción de una tarea existente por ID
 var updateCmd = &cobra.Command{
 	Use:   "update [id] [nueva_descripcion]",
 	Short: "Actualiza la descripción de una tarea existente",
-	Args:  cobra.ExactArgs(2), // Validamos que el usuario pase exactamente 2 argumentos
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		svc, err := obtenerServicioTareas()
+		svc, err := GetServiceTask()
 		if err != nil {
 			fmt.Println("❌", err)
 			return
@@ -52,21 +70,21 @@ var updateCmd = &cobra.Command{
 			return
 		}
 
-		// args[1] contiene la nueva descripción (Cobra ya maneja las comillas por nosotros)
 		if err := svc.Update(id, args[1]); err != nil {
 			fmt.Printf("❌ Error: %v\n", err)
 			return
 		}
-		fmt.Printf("✅ Tarea %d actualizada exitosamente.\n", id)
+		fmt.Printf("Task %d updated successfully.\n", id)
 	},
 }
 
+// deleteCmd elimina una tarea existente de forma permanente por ID
 var deleteCmd = &cobra.Command{
 	Use:   "delete [id]",
 	Short: "Elimina una tarea permanentemente",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		svc, err := obtenerServicioTareas()
+		svc, err := GetServiceTask()
 		if err != nil {
 			fmt.Println("❌", err)
 			return
@@ -82,43 +100,88 @@ var deleteCmd = &cobra.Command{
 			fmt.Printf("❌ Error: %v\n", err)
 			return
 		}
-		fmt.Printf("✅ Tarea %d eliminada.\n", id)
+		fmt.Printf("Task %d deleted successfully.\n", id)
 	},
 }
 
-var addCmd = &cobra.Command{
-	Use:   "add [descripción]",
-	Short: "Agrega una nueva tarea",
-	Args:  cobra.MinimumNArgs(1), // Cobra valida automáticamente que haya al menos 1 argumento
+// markInProgressCmd cambia el estado de una tarea a en progreso
+var markInProgressCmd = &cobra.Command{
+	Use:   "mark-in-progress [id]",
+	Short: "Marca una tarea como en progreso",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		svc, err := obtenerServicioTareas()
+		svc, err := GetServiceTask()
 		if err != nil {
 			fmt.Println("❌", err)
 			return
 		}
 
-		// Cobra nos entrega los argumentos limpios. Si hay espacios, el usuario debió usar comillas.
-		tarea, err := svc.Add(args[0])
-		if err != nil {
+		id, err := strconv.Atoi(args[0])
+		if err != nil || id <= 0 {
+			fmt.Println("❌ Error: El ID debe ser un número entero válido.")
+			return
+		}
+
+		if err := svc.ChangeStatus(id, model.InProgress); err != nil {
 			fmt.Printf("❌ Error: %v\n", err)
 			return
 		}
-		fmt.Printf("✅ Tarea agregada (ID: %d)\n", tarea.ID)
+		fmt.Printf("Task %d marked as in-progress.\n", id)
 	},
 }
 
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "Lista las tareas",
+// markDoneCmd cambia el estado de una tarea a completada
+var markDoneCmd = &cobra.Command{
+	Use:   "mark-done [id]",
+	Short: "Marca una tarea como completada",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		svc, err := obtenerServicioTareas()
+		svc, err := GetServiceTask()
 		if err != nil {
 			fmt.Println("❌", err)
 			return
 		}
 
-		// Obtenemos el flag (bandera) en lugar de argumento posicional
-		estado, _ := cmd.Flags().GetString("estado")
+		id, err := strconv.Atoi(args[0])
+		if err != nil || id <= 0 {
+			fmt.Println("❌ Error: El ID debe ser un número entero válido.")
+			return
+		}
+
+		if err := svc.ChangeStatus(id, model.Complete); err != nil {
+			fmt.Printf("❌ Error: %v\n", err)
+			return
+		}
+		fmt.Printf("Task %d marked as done.\n", id)
+	},
+}
+
+// listCmd muestra todas las tareas o las filtra por estado
+var listCmd = &cobra.Command{
+	Use:   "list [status]",
+	Short: "Lista las tareas",
+	Args:  cobra.MaximumNArgs(1), // Acepta 0 o 1 argumento posicional
+	Run: func(cmd *cobra.Command, args []string) {
+		svc, err := GetServiceTask()
+		if err != nil {
+			fmt.Println("❌", err)
+			return
+		}
+
+		estado := ""
+		if len(args) == 1 {
+			switch args[0] {
+			case "done", "hecho":
+				estado = model.Complete
+			case "todo", "por_hacer":
+				estado = model.ToDo
+			case "in-progress", "en_curso":
+				estado = model.InProgress
+			default:
+				fmt.Println("❌ Filtro inválido. Usa: done, todo, in-progress")
+				return
+			}
+		}
 
 		tareas, err := svc.List(estado)
 		if err != nil {
@@ -130,6 +193,7 @@ var listCmd = &cobra.Command{
 			fmt.Println("📂 No hay tareas.")
 			return
 		}
+
 		fmt.Println("ID\tEstado\t\tDescripción")
 		for _, t := range tareas {
 			fmt.Printf("%d\t[%s]\t%s\n", t.ID, t.Status, t.Description)
@@ -137,31 +201,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
-var completeCmd = &cobra.Command{
-	Use:   "complete [id]",
-	Short: "Marca una tarea como completada",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		svc, err := obtenerServicioTareas()
-		if err != nil {
-			fmt.Println("❌", err)
-			return
-		}
-
-		id, _ := strconv.Atoi(args[0])
-		if err := svc.CambiarEstado(id, model.Complete); err != nil {
-			fmt.Printf("❌ Error: %v\n", err)
-			return
-		}
-		fmt.Printf("✅ Tarea %d completada.\n", id)
-	},
-}
-
+// init registra los comandos de tareas en el comando raíz.
 func init() {
-	rootCmd.AddCommand(taskCmd)
-
-	// ¡Agregamos updateCmd y deleteCmd a la lista!
-	taskCmd.AddCommand(addCmd, listCmd, completeCmd, updateCmd, deleteCmd)
-
-	listCmd.Flags().StringP("estado", "e", "", "Filtrar por estado (por_hacer, completada)")
+	rootCmd.AddCommand(addCmd, updateCmd, deleteCmd, markInProgressCmd, markDoneCmd, listCmd)
 }

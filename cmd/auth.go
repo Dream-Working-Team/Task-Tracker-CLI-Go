@@ -11,15 +11,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// authCmd agrupa los subcomandos de autenticación del sistema
 var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Gestión de autenticación (login, registro, logout)",
 }
 
+// loginCmd solicita credenciales e inicia sesión si son válidas
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Inicia sesión en el sistema",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		if _, err := auth.GetActiveUser(); err == nil {
+			fmt.Println("❌ Error: Ya tienes una sesión iniciada. Usa 'task-cli auth logout' primero.")
+			return
+		}
+
 		fmt.Print("Usuario: ")
 		var username string
 		fmt.Scanln(&username)
@@ -39,10 +47,17 @@ var loginCmd = &cobra.Command{
 	},
 }
 
+// registerCmd pide datos y registra un nuevo usuario en el sistema
 var registerCmd = &cobra.Command{
 	Use:   "register",
 	Short: "Registra un nuevo usuario",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		if _, err := auth.GetActiveUser(); err == nil {
+			fmt.Println("❌ Error: Cierra tu sesión actual con 'task-cli auth logout' para registrar un usuario nuevo.")
+			return
+		}
+
 		fmt.Print("Nuevo Usuario: ")
 		var username string
 		fmt.Scanln(&username)
@@ -62,6 +77,7 @@ var registerCmd = &cobra.Command{
 	},
 }
 
+// logoutCmd cierra la sesión actual del usuario activo
 var logoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "Cierra la sesión actual",
@@ -71,8 +87,7 @@ var logoutCmd = &cobra.Command{
 	},
 }
 
-// La función init() en Go se ejecuta automáticamente al arrancar.
-// Aquí conectamos los subcomandos a su padre.
+// init registra el comando auth y sus subcomandos
 func init() {
 	rootCmd.AddCommand(authCmd)
 	authCmd.AddCommand(loginCmd, registerCmd, logoutCmd)

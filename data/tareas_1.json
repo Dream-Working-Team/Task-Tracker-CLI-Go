@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "description": "Aprender concurrencia en Go con Goroutines",
+    "status": "en_curso",
+    "created_at": "2026-03-27T15:45:28.973772072-04:00",
+    "updated_at": "2026-03-27T15:47:41.525329727-04:00"
+  },
+  {
+    "id": 2,
+    "description": "Configurar atajos de teclado en Antigravity",
+    "status": "hecho",
+    "created_at": "2026-03-27T15:46:04.20562493-04:00",
+    "updated_at": "2026-03-27T15:48:15.764950611-04:00"
+  },
+  {
+    "id": 3,
+    "description": "xd",
+    "status": "por_hacer",
+    "created_at": "2026-03-27T15:46:12.761259025-04:00",
+    "updated_at": "2026-03-27T15:46:12.761261888-04:00"
+  }
+]
