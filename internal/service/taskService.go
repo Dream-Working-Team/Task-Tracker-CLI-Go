@@ -26,14 +26,19 @@ func (s *TaskService) Add(descripcion string) (model.Task, error) {
 		return model.Task{}, err
 	}
 
-	id := 1
-	if len(tasks) > 0 {
-		id = tasks[len(tasks)-1].ID + 1
+	nextID := 1
+	for _, t := range tasks {
+		if t.ID >= nextID {
+			nextID = t.ID + 1
+		}
 	}
 
 	newTask := model.Task{
-		ID: id, Description: descripcion, Status: model.ToDo,
-		CreatedAt: time.Now(), UpdatedAt: time.Now(),
+		ID:          nextID,
+		Description: descripcion,
+		Status:      model.ToDo,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
 	tasks = append(tasks, newTask)
 	return newTask, s.capacity.SaveTask(tasks)
@@ -47,13 +52,16 @@ func (s *TaskService) muteTask(id int, modificar func(*model.Task)) error {
 	}
 
 	for i := range tasks {
-		if tasks[i].ID == id {
-			// Ejecutamos la modificación específica (estado o descripción)
-			modificar(&tasks[i])
-			tasks[i].UpdatedAt = time.Now()
-
-			return s.capacity.SaveTask(tasks)
+		if tasks[i].ID != id {
+			continue
 		}
+		if tasks[i].DeletedAt != nil {
+			return fmt.Errorf("tarea %d eliminada", id)
+		}
+
+		modificar(&tasks[i])
+		tasks[i].UpdatedAt = time.Now()
+		return s.capacity.SaveTask(tasks)
 	}
 	return fmt.Errorf("tarea %d no encontrada", id)
 }
@@ -80,11 +88,17 @@ func (s *TaskService) Delete(id int) error {
 	}
 
 	for i := range tasks {
-		if tasks[i].ID == id {
-
-			tasks = append(tasks[:i], tasks[i+1:]...)
-			return s.capacity.SaveTask(tasks)
+		if tasks[i].ID != id {
+			continue
 		}
+		if tasks[i].DeletedAt != nil {
+			return fmt.Errorf("tarea %d ya estaba eliminada", id)
+		}
+
+		now := time.Now()
+		tasks[i].DeletedAt = &now
+		tasks[i].UpdatedAt = now
+		return s.capacity.SaveTask(tasks)
 	}
 	return fmt.Errorf("tarea %d no encontrada", id)
 }
@@ -100,9 +114,12 @@ func (s *TaskService) List(filter string) ([]model.Task, error) {
 		return tasks, nil
 	}
 
-	var filtered []model.Task
+	filtered := make([]model.Task, 0, len(tasks))
 	for _, t := range tasks {
-		if t.Status == filter {
+		if t.DeletedAt != nil {
+			continue
+		}
+		if t.Status == filter || filter == "" {
 			filtered = append(filtered, t)
 		}
 	}

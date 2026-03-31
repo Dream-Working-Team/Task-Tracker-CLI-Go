@@ -17,11 +17,12 @@ const (
 // Los nombres de los campos deben iniciar en mayusculas para ser exportadoso publicos
 // y que el paquete encoding/json pueda acceder a ellos
 type Task struct {
-	ID          int       `json:"id"`
-	Description string    `json:"description"`
-	Status      string    `json:"status"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          int        `json:"id"`
+	Description string     `json:"description"`
+	Status      string     `json:"status"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	DeletedAt   *time.Time `json:"delete_at,omitempty"`
 }
 
 // Definimos el modelo de usuario como dato estructurado

@@ -171,11 +171,11 @@ var listCmd = &cobra.Command{
 		estado := ""
 		if len(args) == 1 {
 			switch args[0] {
-			case "done", "hecho":
+			case "done":
 				estado = model.Complete
-			case "todo", "por_hacer":
+			case "todo":
 				estado = model.ToDo
-			case "in-progress", "en_curso":
+			case "in-progress":
 				estado = model.InProgress
 			default:
 				fmt.Println("❌ Filtro inválido. Usa: done, todo, in-progress")
