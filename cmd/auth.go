@@ -14,7 +14,7 @@ import (
 // authCmd agrupa los subcomandos de autenticación del sistema
 var authCmd = &cobra.Command{
 	Use:   "auth",
-	Short: "Gestión de autenticación (login, registro, logout)",
+	Short: "Authentication management (login, registro, logout)",
 }
 
 // loginCmd solicita credenciales e inicia sesión si son válidas
