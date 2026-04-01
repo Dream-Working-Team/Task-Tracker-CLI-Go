@@ -23,9 +23,9 @@ import (
 func getRouteSesion() string {
 	dir, err := config.GetDirectionData()
 	if err != nil {
-		return ".session" // Fallback de emergencia a la raíz local
+		return ".ActiveSession" // Fallback de emergencia a la raíz local
 	}
-	return filepath.Join(dir, ".session")
+	return filepath.Join(dir, ".ActiveSession")
 }
 
 // Valores más altos mejoran la seguridad, pero aumentan el tiempo de procesamiento
@@ -55,7 +55,7 @@ func (s *AuthService) Register(username, password string) error {
 
 	for _, u := range usersGeneral {
 		if u.Username == username {
-			return errors.New("el usuario ya existe")
+			return errors.New("The username already exists")
 		}
 	}
 
@@ -84,13 +84,13 @@ func (s *AuthService) Login(username, password string) error {
 			continue
 		}
 		if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)); err != nil {
-			return errors.New("credenciales inválidas")
+			return errors.New("Invalid credentials")
 		}
 		idStr := strconv.Itoa(u.ID)
 		return os.WriteFile(getRouteSesion(), []byte(idStr), 0644)
 
 	}
-	return errors.New("credenciales inválidas")
+	return errors.New("Invalid credentials")
 }
 
 // CloseSesion cierra la sesión eliminando el archivo local de sesión.
@@ -102,7 +102,7 @@ func CloseSesion() {
 func GetActiveUser() (string, error) {
 	data, err := os.ReadFile(getRouteSesion())
 	if err != nil {
-		return "", errors.New("no hay una sesión activa. Usa 'task-cli auth login'")
+		return "", errors.New("No active session. Use 'task-cli auth login'")
 	}
 	return strings.TrimSpace(string(data)), nil
 }

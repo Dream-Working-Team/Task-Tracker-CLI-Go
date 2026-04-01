@@ -2,10 +2,10 @@ package service
 
 import (
 	"fmt"
-	"time"
-
+	"strings"
 	"task-cli/internal/model"
 	"task-cli/internal/storage"
+	"time"
 )
 
 // TaskService encapsula la lógica de negocio para gestionar tareas
@@ -20,10 +20,22 @@ func NewTaskService(s *storage.Storage) *TaskService {
 }
 
 // Add agrega una nueva tarea con ID incremental y la guarda
-func (s *TaskService) Add(descripcion string) (model.Task, error) {
+func (s *TaskService) Add(description string) (model.Task, error) {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
 		return model.Task{}, err
+	}
+
+	normalizedNew := strings.ToLower(strings.TrimSpace(description))
+	for _, t := range tasks {
+		if t.DeletedAt != nil {
+			continue
+		}
+
+		normalizedExisting := strings.ToLower(strings.TrimSpace(t.Description))
+		if normalizedExisting == normalizedNew {
+			return model.Task{}, fmt.Errorf("a task with this description already exists")
+		}
 	}
 
 	nextID := 1
@@ -35,7 +47,7 @@ func (s *TaskService) Add(descripcion string) (model.Task, error) {
 
 	newTask := model.Task{
 		ID:          nextID,
-		Description: descripcion,
+		Description: description,
 		Status:      model.ToDo,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -45,7 +57,7 @@ func (s *TaskService) Add(descripcion string) (model.Task, error) {
 }
 
 // muteTask busca una tarea por ID, la modifica y guarda los cambios
-func (s *TaskService) muteTask(id int, modificar func(*model.Task)) error {
+func (s *TaskService) muteTask(id int, modify func(*model.Task) error) error {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
 		return err
@@ -56,27 +68,35 @@ func (s *TaskService) muteTask(id int, modificar func(*model.Task)) error {
 			continue
 		}
 		if tasks[i].DeletedAt != nil {
-			return fmt.Errorf("tarea %d eliminada", id)
+			return fmt.Errorf("task %d already deleted", id)
 		}
 
-		modificar(&tasks[i])
+		err := modify(&tasks[i])
+		if err != nil {
+			return err
+		}
 		tasks[i].UpdatedAt = time.Now()
 		return s.capacity.SaveTask(tasks)
 	}
-	return fmt.Errorf("tarea %d no encontrada", id)
+	return fmt.Errorf("task %d not found", id)
 }
 
 // ChangeStatus actualiza el estado de una tarea por su ID
 func (s *TaskService) ChangeStatus(id int, newStatus string) error {
-	return s.muteTask(id, func(t *model.Task) {
+	return s.muteTask(id, func(t *model.Task) error {
+		if t.Status == newStatus {
+			return fmt.Errorf("task %d is already in status %q", id, newStatus)
+		}
 		t.Status = newStatus
+		return nil
 	})
 }
 
 // Update cambia la descripción de una tarea por su ID
 func (s *TaskService) Update(id int, newDescription string) error {
-	return s.muteTask(id, func(t *model.Task) {
+	return s.muteTask(id, func(t *model.Task) error {
 		t.Description = newDescription
+		return nil
 	})
 }
 
@@ -92,7 +112,7 @@ func (s *TaskService) Delete(id int) error {
 			continue
 		}
 		if tasks[i].DeletedAt != nil {
-			return fmt.Errorf("tarea %d ya estaba eliminada", id)
+			return fmt.Errorf("task %d already deleted", id)
 		}
 
 		now := time.Now()
@@ -100,7 +120,7 @@ func (s *TaskService) Delete(id int) error {
 		tasks[i].UpdatedAt = now
 		return s.capacity.SaveTask(tasks)
 	}
-	return fmt.Errorf("tarea %d no encontrada", id)
+	return fmt.Errorf("task %d not found", id)
 }
 
 // List devuelve todas las tareas o solo las que coinciden con un estado
@@ -108,10 +128,6 @@ func (s *TaskService) List(filter string) ([]model.Task, error) {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
 		return nil, err
-	}
-
-	if filter == "" {
-		return tasks, nil
 	}
 
 	filtered := make([]model.Task, 0, len(tasks))

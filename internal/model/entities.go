@@ -8,9 +8,9 @@ import "time"
 // Fomenta la seguridad para la escalabilidad
 
 const (
-	ToDo       = "por_hacer"
-	InProgress = "en_curso"
-	Complete   = "hecho"
+	ToDo       = "To_do"
+	InProgress = "In_progress"
+	Complete   = "Done"
 )
 
 // Definimos el modelo de tarea como dato estructurado
