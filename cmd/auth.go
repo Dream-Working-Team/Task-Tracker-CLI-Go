@@ -20,70 +20,70 @@ var authCmd = &cobra.Command{
 // loginCmd solicita credenciales e inicia sesión si son válidas
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Inicia sesión en el sistema",
+	Short: "Log in to the system",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if _, err := auth.GetActiveUser(); err == nil {
-			fmt.Println("❌ Error: Ya tienes una sesión iniciada. Usa 'task-cli auth logout' primero.")
+			fmt.Println("Error: You are already logged in. Use 'task-cli auth logout' first.")
 			return
 		}
 
-		fmt.Print("Usuario: ")
+		fmt.Print("Username: ")
 		var username string
 		fmt.Scanln(&username)
 
-		fmt.Print("Contraseña: ")
+		fmt.Print("Password: ")
 		password := auth.ReadPass()
 
 		dirDatos, _ := config.GetDirectionData()
-		routeUsers := filepath.Join(dirDatos, "usuarios.json")
+		routeUsers := filepath.Join(dirDatos, "users.json")
 
 		svc := auth.NewAuthService(&storage.Storage{Route: routeUsers})
 		if err := svc.Login(strings.ToLower(username), password); err != nil {
-			fmt.Printf("❌ Error: %v\n", err)
+			fmt.Printf("Error: %v\n", err)
 			return
 		}
-		fmt.Printf("✅ Sesión iniciada como '%s'\n", username)
+		fmt.Printf("Session started as '%s'\n", username)
 	},
 }
 
 // registerCmd pide datos y registra un nuevo usuario en el sistema
 var registerCmd = &cobra.Command{
 	Use:   "register",
-	Short: "Registra un nuevo usuario",
+	Short: "Register a new user",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if _, err := auth.GetActiveUser(); err == nil {
-			fmt.Println("❌ Error: Cierra tu sesión actual con 'task-cli auth logout' para registrar un usuario nuevo.")
+			fmt.Println("Error: Log out of your current session with 'task-cli auth logout' to register a new user.")
 			return
 		}
 
-		fmt.Print("Nuevo Usuario: ")
+		fmt.Print("New Username: ")
 		var username string
 		fmt.Scanln(&username)
 
-		fmt.Print("Nueva Contraseña: ")
+		fmt.Print("New Password: ")
 		password := auth.ReadPass()
 
 		dirData, _ := config.GetDirectionData()
-		routeUsers := filepath.Join(dirData, "usuarios.json")
+		routeUsers := filepath.Join(dirData, "users.json")
 
 		svc := auth.NewAuthService(&storage.Storage{Route: routeUsers})
 		if err := svc.Register(strings.ToLower(username), password); err != nil {
-			fmt.Printf("❌ Error: %v\n", err)
+			fmt.Printf("Error: %v\n", err)
 			return
 		}
-		fmt.Println("✅ Registro exitoso. Usa 'task-cli auth login' para acceder.")
+		fmt.Println("Registration successful. Use 'task-cli auth login' to log in.")
 	},
 }
 
 // logoutCmd cierra la sesión actual del usuario activo
 var logoutCmd = &cobra.Command{
 	Use:   "logout",
-	Short: "Cierra la sesión actual",
+	Short: "Close the current session",
 	Run: func(cmd *cobra.Command, args []string) {
 		auth.CloseSesion()
-		fmt.Println("👋 Sesión cerrada.")
+		fmt.Println("Session closed.")
 	},
 }
 
