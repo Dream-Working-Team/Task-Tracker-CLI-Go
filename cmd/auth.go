@@ -11,13 +11,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// authCmd agrupa los subcomandos de autenticación del sistema
+// authCmd groups the system authentication subcommands.
 var authCmd = &cobra.Command{
 	Use:   "auth",
-	Short: "Authentication management (login, registro, logout)",
+	Short: "Authentication management (login, register, logout)",
 }
 
-// loginCmd solicita credenciales e inicia sesión si son válidas
+// loginCmd asks for credentials and starts a session when they are valid.
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Log in to the system",
@@ -35,8 +35,8 @@ var loginCmd = &cobra.Command{
 		fmt.Print("Password: ")
 		password := auth.ReadPass()
 
-		dirDatos, _ := config.GetDirectionData()
-		routeUsers := filepath.Join(dirDatos, "users.json")
+		dataDir, _ := config.GetDataDirectory()
+		routeUsers := filepath.Join(dataDir, "users.json")
 
 		svc := auth.NewAuthService(&storage.Storage{Route: routeUsers})
 		if err := svc.Login(strings.ToLower(username), password); err != nil {
@@ -47,7 +47,7 @@ var loginCmd = &cobra.Command{
 	},
 }
 
-// registerCmd pide datos y registra un nuevo usuario en el sistema
+// registerCmd asks for input data and registers a new user.
 var registerCmd = &cobra.Command{
 	Use:   "register",
 	Short: "Register a new user",
@@ -65,8 +65,8 @@ var registerCmd = &cobra.Command{
 		fmt.Print("New Password: ")
 		password := auth.ReadPass()
 
-		dirData, _ := config.GetDirectionData()
-		routeUsers := filepath.Join(dirData, "users.json")
+		dataDir, _ := config.GetDataDirectory()
+		routeUsers := filepath.Join(dataDir, "users.json")
 
 		svc := auth.NewAuthService(&storage.Storage{Route: routeUsers})
 		if err := svc.Register(strings.ToLower(username), password); err != nil {
@@ -77,17 +77,17 @@ var registerCmd = &cobra.Command{
 	},
 }
 
-// logoutCmd cierra la sesión actual del usuario activo
+// logoutCmd closes the current active user session.
 var logoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "Close the current session",
 	Run: func(cmd *cobra.Command, args []string) {
-		auth.CloseSesion()
+		auth.CloseSession()
 		fmt.Println("Session closed.")
 	},
 }
 
-// init registra el comando auth y sus subcomandos
+// init registers the auth command and its subcommands.
 func init() {
 	rootCmd.AddCommand(authCmd)
 	authCmd.AddCommand(loginCmd, registerCmd, logoutCmd)

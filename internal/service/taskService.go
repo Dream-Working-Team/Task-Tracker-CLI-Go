@@ -8,18 +8,18 @@ import (
 	"time"
 )
 
-// TaskService encapsula la lógica de negocio para gestionar tareas
+// TaskService encapsulates business logic for task management.
 type TaskService struct {
-	// capacity representa la capa de almacenamiento usada por el servicio
+	// capacity references the storage layer used by the service.
 	capacity *storage.Storage
 }
 
-// NewTaskService crea una instancia del servicio de tareas con su almacenamiento
+// NewTaskService creates a task service instance with its storage dependency.
 func NewTaskService(s *storage.Storage) *TaskService {
 	return &TaskService{capacity: s}
 }
 
-// Add agrega una nueva tarea con ID incremental y la guarda
+// Add creates a new task with an incremental ID and stores it.
 func (s *TaskService) Add(description string) (model.Task, error) {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
@@ -56,7 +56,7 @@ func (s *TaskService) Add(description string) (model.Task, error) {
 	return newTask, s.capacity.SaveTask(tasks)
 }
 
-// muteTask busca una tarea por ID, la modifica y guarda los cambios
+// muteTask finds a task by ID, applies changes, and saves them.
 func (s *TaskService) muteTask(id int, modify func(*model.Task) error) error {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
@@ -81,7 +81,7 @@ func (s *TaskService) muteTask(id int, modify func(*model.Task) error) error {
 	return fmt.Errorf("task %d not found", id)
 }
 
-// ChangeStatus actualiza el estado de una tarea por su ID
+// ChangeStatus updates the status of a task by ID.
 func (s *TaskService) ChangeStatus(id int, newStatus string) error {
 	return s.muteTask(id, func(t *model.Task) error {
 		if t.Status == newStatus {
@@ -92,7 +92,7 @@ func (s *TaskService) ChangeStatus(id int, newStatus string) error {
 	})
 }
 
-// Update cambia la descripción de una tarea por su ID
+// Update changes a task description by ID.
 func (s *TaskService) Update(id int, newDescription string) error {
 	return s.muteTask(id, func(t *model.Task) error {
 		t.Description = newDescription
@@ -100,7 +100,7 @@ func (s *TaskService) Update(id int, newDescription string) error {
 	})
 }
 
-// Delete elimina una tarea por su ID y guarda la lista actualizada
+// Delete removes a task by ID and stores the updated list.
 func (s *TaskService) Delete(id int) error {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
@@ -123,7 +123,7 @@ func (s *TaskService) Delete(id int) error {
 	return fmt.Errorf("task %d not found", id)
 }
 
-// List devuelve todas las tareas o solo las que coinciden con un estado
+// List returns all tasks or only those that match a status filter.
 func (s *TaskService) List(filter string) ([]model.Task, error) {
 	tasks, err := s.capacity.ReadTask()
 	if err != nil {
