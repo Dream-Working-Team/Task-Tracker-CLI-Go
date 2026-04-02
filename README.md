@@ -1,10 +1,24 @@
 # Task Tracker CLI (Go) 🚀
 
+![Go Version](https://img.shields.io/badge/Go-1.25-blue)
+![Build](https://img.shields.io/badge/CI-GitHub%20Actions-success)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 Task Tracker CLI is a multi-user command-line task manager built in Go. It supports user authentication, per-user task storage, task state transitions, and persistent JSON-based data storage.
 
 ## Overview 📌
 
 The application is organized around a root command powered by [Cobra](https://github.com/spf13/cobra). Each authenticated user gets an isolated task file, so task operations remain scoped to the active session.
+
+## Architecture 🏛️
+
+- **CLI layer (`cmd/`)**: Command routing and UX are implemented with Cobra.
+- **Auth layer (`internal/auth/`)**: User registration and login are handled with password hashing via `bcrypt`.
+- **Service layer (`internal/service/`)**: Business rules (duplicate validation, status transitions, soft delete visibility) are enforced here.
+- **Storage layer (`internal/storage/`)**: Generic JSON file persistence for users and tasks.
+- **Isolation model**: Active session is resolved from `.ActiveSession`, and each user writes to `data/task_<user_id>.json`.
+
+This separation keeps CLI concerns decoupled from business logic and persistence, making the project easier to evolve and test.
 
 ## Features ✨
 
@@ -97,6 +111,53 @@ Run it directly without building:
 ```bash
 go run . --help
 ```
+
+## CI with GitHub Actions ⚙️
+
+This repository includes a CI workflow at `.github/workflows/go.yml`.
+
+On every push and pull request to `main`, GitHub Actions will:
+
+1. Set up Go.
+2. Download dependencies.
+3. Build all packages with `go build -v ./...`.
+4. Run tests with `go test -v ./...`.
+
+This ensures the project remains buildable and prevents broken changes from being merged.
+
+## Releases and Cross-Compilation 📦
+
+This repository includes an automated release workflow at `.github/workflows/release.yml`.
+
+When you push a tag like `v1.0.0`, GitHub Actions builds binaries for:
+
+- Linux (`amd64`, `arm64`)
+- Windows (`amd64`)
+- macOS (`arm64`)
+
+Built binaries are attached automatically to the corresponding GitHub Release.
+
+### Manual cross-compilation examples
+
+```bash
+# Windows (amd64)
+GOOS=windows GOARCH=amd64 go build -o task-cli.exe .
+
+# macOS Apple Silicon (arm64)
+GOOS=darwin GOARCH=arm64 go build -o task-cli-mac .
+
+# Linux (amd64)
+GOOS=linux GOARCH=amd64 go build -o task-cli-linux .
+```
+
+## Dependabot Security Updates 🔒
+
+Dependabot is configured in `.github/dependabot.yml` for:
+
+- Go modules (`gomod`)
+- GitHub Actions dependencies
+
+It checks updates daily and opens pull requests automatically when newer dependency versions are available.
 
 ## Usage Example ▶️
 
