@@ -7,7 +7,7 @@ import (
 )
 
 // Version is overridden at build time with ldflags for tagged releases.
-var Version = "dev"
+var Version = "v1.0.0"
 
 var rootCmd = &cobra.Command{
 	Use:     "task-cli",
