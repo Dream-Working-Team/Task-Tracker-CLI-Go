@@ -6,10 +6,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Version is overridden at build time with ldflags for tagged releases.
+var Version = "dev"
+
 var rootCmd = &cobra.Command{
-	Use:   "task-cli",
-	Short: "A multi-user task manager for the terminal",
-	Long:  "Task Tracker CLI Secure. Manage tasks per user with isolated and persistent storage.",
+	Use:     "task-cli",
+	Short:   "A multi-user task manager for the terminal",
+	Long:    "Task Tracker CLI Secure. Manage tasks per user with isolated and persistent storage.",
+	Version: Version,
 }
 
 func init() {
