@@ -1,35 +1,30 @@
-# ==========================================
-# Binarios y Ejecutables
-# ==========================================
-# Ignoramos el binario compilado de nuestro CLI
-task-cli
-task-cli.exe
-# Ignoramos binarios de pruebas de Go
+# Build artifacts
+/task-cli
+/task-cli.exe
 *.test
 *.out
 
-# ==========================================
-# Base de Datos Local y Sesiones
-# ==========================================
-# ¡NUNCA subir datos reales o credenciales!
-data/
-*.json
+# Runtime data
+/data/*
+!/data/.gitkeep
 .session
 
-# ==========================================
-# Entorno y Dependencias
-# ==========================================
-vendor/
+# Dependencies and local environment
+/vendor/
 .env
 
-# ==========================================
-# Configuraciones de SO y Editores
-# ==========================================
-# Antigravity (al ser un fork de VS Code) y otros editores
+# Editors and OS files
 .vscode/
 .idea/
 *.swp
-
-# Archivos de sistemas operativos (macOS/Windows)
 .DS_Store
 Thumbs.db
+
+# AI assistant artifacts (local only)
+AGENTS.md
+*.agent.md
+*.instructions.md
+*.prompt.md
+.github/copilot-instructions.md
+.agents/
+.copilot/

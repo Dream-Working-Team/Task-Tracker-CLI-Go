@@ -19,43 +19,43 @@ import (
 	"task-cli/internal/config"
 )
 
-// getRouteSesion devuelve la ruta del archivo local donde se guarda la sesión.
-func getRouteSesion() string {
-	dir, err := config.GetDirectionData()
+// getSessionPath returns the local file path where the active session is stored.
+func getSessionPath() string {
+	dir, err := config.GetDataDirectory()
 	if err != nil {
-		return ".session" // Fallback de emergencia a la raíz local
+		return ".ActiveSession" // Emergency fallback to the local root directory.
 	}
-	return filepath.Join(dir, ".session")
+	return filepath.Join(dir, ".ActiveSession")
 }
 
-// Valores más altos mejoran la seguridad, pero aumentan el tiempo de procesamiento
+// Higher values improve security but increase processing time.
 const passwordHashCost = bcrypt.DefaultCost
 
-// AuthService coordina el registro de usuarios, el inicio de sesión y la persistencia de sesión
+// AuthService coordinates user registration, login, and session persistence.
 type AuthService struct {
 	save *storage.Storage
 }
 
-// NewAuthService crea una instancia del servicio de autenticación.
+// NewAuthService creates a new authentication service instance.
 func NewAuthService(s *storage.Storage) *AuthService {
 	return &AuthService{save: s}
 }
 
-// Register registra un usuario nuevo si el nombre no existe.
+// Register creates a new user if the username does not already exist.
 func (s *AuthService) Register(username, password string) error {
-	usersGeneral, err := s.save.ReadUsers()
+	users, err := s.save.ReadUsers()
 	if err != nil {
 		return err
 	}
 
 	newID := 1
-	if len(usersGeneral) > 0 {
-		newID = usersGeneral[len(usersGeneral)-1].ID + 1
+	if len(users) > 0 {
+		newID = users[len(users)-1].ID + 1
 	}
 
-	for _, u := range usersGeneral {
+	for _, u := range users {
 		if u.Username == username {
-			return errors.New("el usuario ya existe")
+			return errors.New("The username already exists")
 		}
 	}
 
@@ -64,50 +64,50 @@ func (s *AuthService) Register(username, password string) error {
 		return err
 	}
 
-	usersGeneral = append(usersGeneral, model.User{
-		ID:           newID, // Asignamos el ID
+	users = append(users, model.User{
+		ID:           newID, // Assign the next sequential ID.
 		Username:     username,
 		PasswordHash: string(hash),
 	})
-	return s.save.SaveUsers(usersGeneral)
+	return s.save.SaveUsers(users)
 }
 
-// Login valida credenciales y guarda la sesión del usuario autenticado.
+// Login validates credentials and stores the authenticated user session.
 func (s *AuthService) Login(username, password string) error {
-	usersGeneral, err := s.save.ReadUsers()
+	users, err := s.save.ReadUsers()
 	if err != nil {
 		return err
 	}
 
-	for _, u := range usersGeneral {
+	for _, u := range users {
 		if u.Username != username {
 			continue
 		}
 		if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)); err != nil {
-			return errors.New("credenciales inválidas")
+			return errors.New("Invalid credentials")
 		}
 		idStr := strconv.Itoa(u.ID)
-		return os.WriteFile(getRouteSesion(), []byte(idStr), 0644)
+		return os.WriteFile(getSessionPath(), []byte(idStr), 0644)
 
 	}
-	return errors.New("credenciales inválidas")
+	return errors.New("Invalid credentials")
 }
 
-// CloseSesion cierra la sesión eliminando el archivo local de sesión.
-func CloseSesion() {
-	os.Remove(getRouteSesion())
+// CloseSession closes the session by removing the local session file.
+func CloseSession() {
+	os.Remove(getSessionPath())
 }
 
-// GetActiveUser devuelve el ID del usuario con sesión activa.
+// GetActiveUser returns the ID of the user with an active session.
 func GetActiveUser() (string, error) {
-	data, err := os.ReadFile(getRouteSesion())
+	data, err := os.ReadFile(getSessionPath())
 	if err != nil {
-		return "", errors.New("no hay una sesión activa. Usa 'task-cli auth login'")
+		return "", errors.New("No active session. Use 'task-cli auth login'")
 	}
 	return strings.TrimSpace(string(data)), nil
 }
 
-// ReadPass lee una contraseña sin mostrarla en la terminal.
+// ReadPass reads a password without displaying it in the terminal.
 func ReadPass() string {
 	bytePassword, _ := term.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
