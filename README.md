@@ -13,6 +13,7 @@ Current version: `dev` for local builds. Release builds inject the tag version a
 - Andrés Tortolero
 - Instagram: [@andress.tor](https://www.instagram.com/andress.tor?igsh=enRtNXVpNDkxNHNx&utm_source=qr)
 - LinkedIn: to be added later
+- Project URL: https://roadmap.sh/projects/task-tracker
 
 ## Overview 📌
 
