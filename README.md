@@ -8,6 +8,12 @@ Task Tracker CLI is a multi-user command-line task manager built in Go. It suppo
 
 Current version: `dev` for local builds. Release builds inject the tag version at compile time.
 
+## Author 👤
+
+- Andrés Tortolero
+- Instagram: [@andress.tor](https://www.instagram.com/andress.tor?igsh=enRtNXVpNDkxNHNx&utm_source=qr)
+- LinkedIn: to be added later
+
 ## Overview 📌
 
 The application is organized around a root command powered by [Cobra](https://github.com/spf13/cobra). Each authenticated user gets an isolated task file, so task operations remain scoped to the active session.

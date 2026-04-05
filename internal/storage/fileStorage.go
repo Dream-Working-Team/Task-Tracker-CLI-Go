@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-// handleReadError converts a missing file error into an empty list and forwards other errors.
+// handleReadError converts a missing file error into an empty list and forwards other errors
 func handleReadError[T any](err error) ([]T, error) {
 	if errors.Is(err, os.ErrNotExist) {
 		return []T{}, nil
@@ -14,7 +14,7 @@ func handleReadError[T any](err error) ([]T, error) {
 	return nil, err
 }
 
-// ReadFile reads a JSON file and converts it into a typed list.
+// ReadFile reads a JSON file and converts it into a typed list
 func ReadFile[T any](route string) ([]T, error) {
 	data, err := os.ReadFile(route)
 	if err != nil {
@@ -31,7 +31,7 @@ func ReadFile[T any](route string) ([]T, error) {
 	return items, nil
 }
 
-// SaveFile writes a typed list to disk as indented JSON.
+// SaveFile writes a typed list to disk as indented JSON
 func SaveFile[T any](route string, items []T) error {
 	data, err := json.MarshalIndent(items, "", "  ")
 	if err != nil {
