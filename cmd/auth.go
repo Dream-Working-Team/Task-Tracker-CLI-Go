@@ -11,13 +11,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// authCmd groups the system authentication subcommands.
+// authCmd groups the system authentication subcommands
 var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Authentication management (login, register, logout)",
 }
 
-// loginCmd asks for credentials and starts a session when they are valid.
+// loginCmd asks for credentials and starts a session when they are valid
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Log in to the system",
@@ -47,7 +47,7 @@ var loginCmd = &cobra.Command{
 	},
 }
 
-// registerCmd asks for input data and registers a new user.
+// registerCmd asks for input data and registers a new user
 var registerCmd = &cobra.Command{
 	Use:   "register",
 	Short: "Register a new user",
@@ -77,7 +77,7 @@ var registerCmd = &cobra.Command{
 	},
 }
 
-// logoutCmd closes the current active user session.
+// logoutCmd closes the current active user session
 var logoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "Close the current session",
@@ -87,7 +87,7 @@ var logoutCmd = &cobra.Command{
 	},
 }
 
-// init registers the auth command and its subcommands.
+// init registers the auth command and its subcommands
 func init() {
 	rootCmd.AddCommand(authCmd)
 	authCmd.AddCommand(loginCmd, registerCmd, logoutCmd)

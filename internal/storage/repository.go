@@ -1,6 +1,5 @@
 package storage
 
-// model contains the domain entities used by the repository.
 import "task-cli/internal/model"
 
 // Storage represents a file-based persistence repository.

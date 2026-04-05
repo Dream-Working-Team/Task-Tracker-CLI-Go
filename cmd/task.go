@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// GetServiceTask validates the active session and creates the user's task service.
+// GetServiceTask validates the active session and creates the user's task service
 func GetServiceTask() (*service.TaskService, error) {
 	userID, err := auth.GetActiveUser()
 	if err != nil {
@@ -30,7 +30,7 @@ func GetServiceTask() (*service.TaskService, error) {
 	return service.NewTaskService(&storage.Storage{Route: taskFile}), nil
 }
 
-// addCmd creates a new task using the provided description.
+// addCmd creates a new task using the provided description
 var addCmd = &cobra.Command{
 	Use:   "add [description]",
 	Short: "Add new task",
@@ -48,12 +48,12 @@ var addCmd = &cobra.Command{
 			return
 		}
 
-		// Keep this exact output format to match the expected behavior.
+		// Keep this exact output format to match the expected behavior
 		fmt.Printf("Task added successfully (ID: %d)\n", task.ID)
 	},
 }
 
-// updateCmd updates the description of an existing task by ID.
+// updateCmd updates the description of an existing task by ID
 var updateCmd = &cobra.Command{
 	Use:   "update [id] [new_description]",
 	Short: "Update the description of an existing task",
@@ -79,7 +79,7 @@ var updateCmd = &cobra.Command{
 	},
 }
 
-// deleteCmd removes an existing task permanently by ID.
+// deleteCmd removes an existing task permanently by ID
 var deleteCmd = &cobra.Command{
 	Use:   "delete [id]",
 	Short: "Remove a task permanently",
@@ -133,7 +133,7 @@ var markTodoCmd = &cobra.Command{
 	},
 }
 
-// markInProgressCmd changes a task status to in-progress.
+// markInProgressCmd changes a task status to in-progress
 var markInProgressCmd = &cobra.Command{
 	Use:   "mark-in-progress [id]",
 	Short: "Mark a task as in-progress",
@@ -159,7 +159,7 @@ var markInProgressCmd = &cobra.Command{
 	},
 }
 
-// markDoneCmd changes a task status to done.
+// markDoneCmd changes a task status to done
 var markDoneCmd = &cobra.Command{
 	Use:   "mark-done [id]",
 	Short: "Mark a task as completed",
@@ -185,11 +185,11 @@ var markDoneCmd = &cobra.Command{
 	},
 }
 
-// listCmd shows all tasks or filters them by status.
+// listCmd shows all tasks or filters them by status
 var listCmd = &cobra.Command{
 	Use:   "list [status]",
 	Short: "Task list",
-	Args:  cobra.MaximumNArgs(1), // Accepts 0 or 1 positional argument.
+	Args:  cobra.MaximumNArgs(1), // Accepts 0 or 1 positional argument
 	Run: func(cmd *cobra.Command, args []string) {
 		svc, err := GetServiceTask()
 		if err != nil {
@@ -230,7 +230,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
-// init registers task commands on the root command.
+// init registers task commands on the root command
 func init() {
 	rootCmd.AddCommand(addCmd, updateCmd, deleteCmd, markTodoCmd, markInProgressCmd, markDoneCmd, listCmd)
 }
